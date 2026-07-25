@@ -9,7 +9,7 @@ on:
       opencode_version:
         description: 'opencode 版本 tag'
         required: false
-        default: 'v1.17.11'
+        default: 'v0.0.55'
 
 jobs:
   build:
@@ -24,7 +24,7 @@ jobs:
 
       - name: Clone opencode
         run: |
-          TAG="${{ github.event.inputs.opencode_version || 'v1.17.11' }}"
+          TAG="${{ github.event.inputs.opencode_version || 'v0.0.55' }}"
           git clone --depth 1 --branch "$TAG" \
             https://github.com/opencode-ai/opencode.git _upstream
 
