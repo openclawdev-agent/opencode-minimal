@@ -57,3 +57,9 @@ func JoinPath(base, file string) string {
 	}
 	return base + "/" + file
 }
+
+// GenerateDiff creates a unified diff from two file contents
+func GenerateDiff(beforeContent, afterContent, fileName string) (string, int, int) {
+	// 精简版 stub：不生成实际 diff，直接返回空
+	return "", 0, 0
+}
