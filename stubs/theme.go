@@ -1,7 +1,9 @@
 package theme
 
+import "github.com/charmbracelet/lipgloss"
+
 // AdaptiveColor represents a color that adapts to the current theme.
-type AdaptiveColor = string
+type AdaptiveColor = lipgloss.AdaptiveColor
 
 // Theme defines the interface for theme colors.
 type Theme interface {
@@ -64,63 +66,63 @@ type Theme interface {
 	SyntaxPunctuation() AdaptiveColor
 }
 
-// defaultTheme implements Theme with all methods returning empty strings.
+// defaultTheme implements Theme with all methods returning empty colors.
 type defaultTheme struct{}
 
-func (defaultTheme) Primary() AdaptiveColor                  { return "" }
-func (defaultTheme) Secondary() AdaptiveColor                { return "" }
-func (defaultTheme) Accent() AdaptiveColor                   { return "" }
-func (defaultTheme) Error() AdaptiveColor                    { return "" }
-func (defaultTheme) Warning() AdaptiveColor                  { return "" }
-func (defaultTheme) Success() AdaptiveColor                  { return "" }
-func (defaultTheme) Info() AdaptiveColor                     { return "" }
-func (defaultTheme) Text() AdaptiveColor                     { return "" }
-func (defaultTheme) TextMuted() AdaptiveColor                { return "" }
-func (defaultTheme) TextEmphasized() AdaptiveColor           { return "" }
-func (defaultTheme) Background() AdaptiveColor               { return "" }
-func (defaultTheme) BackgroundSecondary() AdaptiveColor      { return "" }
-func (defaultTheme) BackgroundDarker() AdaptiveColor         { return "" }
-func (defaultTheme) BorderNormal() AdaptiveColor             { return "" }
-func (defaultTheme) BorderFocused() AdaptiveColor            { return "" }
-func (defaultTheme) BorderDim() AdaptiveColor                { return "" }
-func (defaultTheme) DiffAdded() AdaptiveColor                { return "" }
-func (defaultTheme) DiffRemoved() AdaptiveColor              { return "" }
-func (defaultTheme) DiffContext() AdaptiveColor              { return "" }
-func (defaultTheme) DiffHunkHeader() AdaptiveColor           { return "" }
-func (defaultTheme) DiffHighlightAdded() AdaptiveColor       { return "" }
-func (defaultTheme) DiffHighlightRemoved() AdaptiveColor     { return "" }
-func (defaultTheme) DiffAddedBg() AdaptiveColor              { return "" }
-func (defaultTheme) DiffRemovedBg() AdaptiveColor            { return "" }
-func (defaultTheme) DiffContextBg() AdaptiveColor            { return "" }
-func (defaultTheme) DiffLineNumber() AdaptiveColor           { return "" }
-func (defaultTheme) DiffAddedLineNumberBg() AdaptiveColor    { return "" }
-func (defaultTheme) DiffRemovedLineNumberBg() AdaptiveColor  { return "" }
-func (defaultTheme) MarkdownText() AdaptiveColor             { return "" }
-func (defaultTheme) MarkdownHeading() AdaptiveColor          { return "" }
-func (defaultTheme) MarkdownLink() AdaptiveColor             { return "" }
-func (defaultTheme) MarkdownLinkText() AdaptiveColor         { return "" }
-func (defaultTheme) MarkdownCode() AdaptiveColor             { return "" }
-func (defaultTheme) MarkdownBlockQuote() AdaptiveColor       { return "" }
-func (defaultTheme) MarkdownEmph() AdaptiveColor             { return "" }
-func (defaultTheme) MarkdownStrong() AdaptiveColor           { return "" }
-func (defaultTheme) MarkdownHorizontalRule() AdaptiveColor   { return "" }
-func (defaultTheme) MarkdownListItem() AdaptiveColor         { return "" }
-func (defaultTheme) MarkdownListEnumeration() AdaptiveColor  { return "" }
-func (defaultTheme) MarkdownImage() AdaptiveColor            { return "" }
-func (defaultTheme) MarkdownImageText() AdaptiveColor        { return "" }
-func (defaultTheme) MarkdownCodeBlock() AdaptiveColor        { return "" }
-func (defaultTheme) SyntaxComment() AdaptiveColor            { return "" }
-func (defaultTheme) SyntaxKeyword() AdaptiveColor            { return "" }
-func (defaultTheme) SyntaxFunction() AdaptiveColor           { return "" }
-func (defaultTheme) SyntaxVariable() AdaptiveColor           { return "" }
-func (defaultTheme) SyntaxString() AdaptiveColor             { return "" }
-func (defaultTheme) SyntaxNumber() AdaptiveColor             { return "" }
-func (defaultTheme) SyntaxType() AdaptiveColor               { return "" }
-func (defaultTheme) SyntaxOperator() AdaptiveColor           { return "" }
-func (defaultTheme) SyntaxPunctuation() AdaptiveColor        { return "" }
+func (defaultTheme) Primary() AdaptiveColor                  { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) Secondary() AdaptiveColor                { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) Accent() AdaptiveColor                   { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) Error() AdaptiveColor                    { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) Warning() AdaptiveColor                  { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) Success() AdaptiveColor                  { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) Info() AdaptiveColor                     { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) Text() AdaptiveColor                     { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) TextMuted() AdaptiveColor                { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) TextEmphasized() AdaptiveColor           { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) Background() AdaptiveColor               { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) BackgroundSecondary() AdaptiveColor      { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) BackgroundDarker() AdaptiveColor         { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) BorderNormal() AdaptiveColor             { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) BorderFocused() AdaptiveColor            { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) BorderDim() AdaptiveColor                { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) DiffAdded() AdaptiveColor                { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) DiffRemoved() AdaptiveColor              { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) DiffContext() AdaptiveColor              { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) DiffHunkHeader() AdaptiveColor           { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) DiffHighlightAdded() AdaptiveColor       { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) DiffHighlightRemoved() AdaptiveColor     { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) DiffAddedBg() AdaptiveColor              { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) DiffRemovedBg() AdaptiveColor            { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) DiffContextBg() AdaptiveColor            { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) DiffLineNumber() AdaptiveColor           { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) DiffAddedLineNumberBg() AdaptiveColor    { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) DiffRemovedLineNumberBg() AdaptiveColor  { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownText() AdaptiveColor             { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownHeading() AdaptiveColor          { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownLink() AdaptiveColor             { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownLinkText() AdaptiveColor         { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownCode() AdaptiveColor             { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownBlockQuote() AdaptiveColor       { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownEmph() AdaptiveColor             { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownStrong() AdaptiveColor           { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownHorizontalRule() AdaptiveColor   { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownListItem() AdaptiveColor         { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownListEnumeration() AdaptiveColor  { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownImage() AdaptiveColor            { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownImageText() AdaptiveColor        { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) MarkdownCodeBlock() AdaptiveColor        { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) SyntaxComment() AdaptiveColor            { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) SyntaxKeyword() AdaptiveColor            { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) SyntaxFunction() AdaptiveColor           { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) SyntaxVariable() AdaptiveColor           { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) SyntaxString() AdaptiveColor             { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) SyntaxNumber() AdaptiveColor             { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) SyntaxType() AdaptiveColor               { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) SyntaxOperator() AdaptiveColor           { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
+func (defaultTheme) SyntaxPunctuation() AdaptiveColor        { return lipgloss.AdaptiveColor{Light: "", Dark: ""} }
 
-// CurrentTheme is the package-level theme variable.
-var CurrentTheme Theme = defaultTheme{}
+// CurrentTheme returns the current theme.
+func CurrentTheme() Theme { return &defaultTheme{} }
 
 // Init initializes the theme system with the given name.
 func Init(name string) {}
@@ -129,4 +131,4 @@ func Init(name string) {}
 func SetTheme(name string) error { return nil }
 
 // GetTheme returns the current theme.
-func GetTheme() Theme { return CurrentTheme }
+func GetTheme() Theme { return CurrentTheme() }

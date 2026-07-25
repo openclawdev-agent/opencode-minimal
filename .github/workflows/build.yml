@@ -31,16 +31,17 @@ jobs:
       - name: Strip non-essential modules
         run: |
           cd _upstream
-          echo "=== 移除非必要模块 ==="
-           rm -rf internal/tui internal/completions internal/lsp internal/diff
-           echo "=== 从 stubs 目录复制精简实现 ==="
+           echo "=== 移除非必要模块 ==="
+            rm -rf internal/tui internal/completions internal/lsp
+            echo "=== 从 stubs 目录复制精简实现 ==="
           mkdir -p internal/tui/theme internal/lsp/protocol internal/lsp/watcher
           cp $GITHUB_WORKSPACE/stubs/tui.go internal/tui/tui.go
           cp $GITHUB_WORKSPACE/stubs/theme.go internal/tui/theme/theme.go
           cp $GITHUB_WORKSPACE/stubs/lsp.go internal/lsp/lsp.go
           cp $GITHUB_WORKSPACE/stubs/protocol.go internal/lsp/protocol/protocol.go
-          cp $GITHUB_WORKSPACE/stubs/watcher.go internal/lsp/watcher/watcher.go
-          echo "=== 模块列表 ==="
+           cp $GITHUB_WORKSPACE/stubs/watcher.go internal/lsp/watcher/watcher.go
+           cp $GITHUB_WORKSPACE/stubs/diff.go internal/diff/diff.go
+           echo "=== 模块列表 ==="
           ls internal/
 
       - name: Build ARM64 binary
@@ -50,14 +51,15 @@ jobs:
             go build -trimpath -ldflags="-s -w" \
             -o ../opencode.minimal-arm64 . || {
               echo "TUI 移除构建失败，回退到纯构建优化"
-              git checkout -- .
-              rm -rf internal/tui internal/completions internal/lsp internal/diff
+               git checkout -- .
+               rm -rf internal/tui internal/completions internal/lsp
               mkdir -p internal/tui/theme internal/lsp/protocol internal/lsp/watcher
               cp $GITHUB_WORKSPACE/stubs/tui.go internal/tui/tui.go
               cp $GITHUB_WORKSPACE/stubs/theme.go internal/tui/theme/theme.go
               cp $GITHUB_WORKSPACE/stubs/lsp.go internal/lsp/lsp.go
               cp $GITHUB_WORKSPACE/stubs/protocol.go internal/lsp/protocol/protocol.go
               cp $GITHUB_WORKSPACE/stubs/watcher.go internal/lsp/watcher/watcher.go
+              cp $GITHUB_WORKSPACE/stubs/diff.go internal/diff/diff.go
               CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
                 go build -trimpath -ldflags="-s -w" \
                 -o ../opencode.minimal-arm64 .
