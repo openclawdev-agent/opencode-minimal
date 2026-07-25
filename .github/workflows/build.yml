@@ -32,166 +32,14 @@ jobs:
         run: |
           cd _upstream
           echo "=== 移除非必要模块 ==="
-          rm -rf internal/tui
-          rm -rf internal/completions
-          rm -rf internal/lsp
-
-          echo "=== 创建 tui stub ==="
-          mkdir -p internal/tui/theme
-          printf '%s\n' 'package tui
-
-import (
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/opencode-ai/opencode/internal/app"
-)
-
-type stubModel struct{}
-
-func (m stubModel) Init() tea.Cmd            { return nil }
-func (m stubModel) Update(tea.Msg) (tea.Model, tea.Cmd) { return m, nil }
-func (m stubModel) View() string             { return "" }
-
-func New(_ *app.App) tea.Model { return stubModel{} }' > internal/tui/tui.go
-          printf '%s\n' 'package theme
-
-type Theme struct{}
-
-func (Theme) Get() Theme       { return Theme{} }
-func Init(_ string)            {}
-func SetTheme(_ string) error  { return nil }' > internal/tui/theme/theme.go
-
-          echo "=== 创建 lsp stub ==="
-          mkdir -p internal/lsp/protocol internal/lsp/watcher
-          printf '%s\n' 'package lsp
-
-import (
-	"context"
-	"encoding/json"
-	"sync"
-
-	"github.com/opencode-ai/opencode/internal/lsp/protocol"
-)
-
-type ServerState int
-
-const (
-	StateStarting ServerState = iota
-	StateReady
-	StateError
-)
-
-type NotificationHandler func(json.RawMessage)
-
-type Client struct {
-	notificationHandlers map[string]NotificationHandler
-	notificationMu       sync.RWMutex
-	diagnostics          map[protocol.DocumentUri][]protocol.Diagnostic
-	diagnosticsMu        sync.RWMutex
-	serverState          ServerState
-}
-
-func NewClient(ctx context.Context, command string, args ...string) (*Client, error) {
-	return &Client{
-		notificationHandlers: make(map[string]NotificationHandler),
-		diagnostics:          make(map[protocol.DocumentUri][]protocol.Diagnostic),
-	}, nil
-}
-
-func (c *Client) InitializeLSPClient(ctx context.Context, workspaceDir string) (*protocol.InitializeResult, error) {
-	return nil, nil
-}
-
-func (c *Client) Close() error                              { return nil }
-func (c *Client) Shutdown(ctx context.Context) error         { return nil }
-func (c *Client) WaitForServerReady(ctx context.Context) error { return nil }
-func (c *Client) GetServerState() ServerState               { return c.serverState }
-func (c *Client) SetServerState(state ServerState)          { c.serverState = state }
-func (c *Client) OpenFile(ctx context.Context, filepath string) error    { return nil }
-func (c *Client) NotifyChange(ctx context.Context, filepath string) error { return nil }
-func (c *Client) IsFileOpen(filepath string) bool              { return false }
-
-func (c *Client) GetDiagnostics() map[protocol.DocumentUri][]protocol.Diagnostic {
-	c.diagnosticsMu.RLock()
-	defer c.diagnosticsMu.RUnlock()
-	return c.diagnostics
-}
-
-func (c *Client) RegisterNotificationHandler(method string, handler NotificationHandler) {
-	c.notificationMu.Lock()
-	defer c.notificationMu.Unlock()
-	c.notificationHandlers[method] = handler
-}
-
-func HandleDiagnostics(client *Client, params json.RawMessage) {}
-
-type LSPClients = map[string]*Client' > internal/lsp/lsp.go
-          printf '%s\n' 'package protocol
-
-type DocumentUri string
-
-func (uri DocumentUri) Path() string { return string(uri) }
-
-type URI = string
-
-type DiagnosticSeverity uint32
-
-const (
-	SeverityError       DiagnosticSeverity = 1
-	SeverityWarning     DiagnosticSeverity = 2
-	SeverityInformation DiagnosticSeverity = 3
-	SeverityHint        DiagnosticSeverity = 4
-)
-
-type DiagnosticTag uint32
-
-const (
-	Unnecessary DiagnosticTag = 1
-	Deprecated  DiagnosticTag = 2
-)
-
-type Position struct {
-	Line      uint32 `json:"line"`
-	Character uint32 `json:"character"`
-}
-
-type Range struct {
-	Start Position `json:"start"`
-	End   Position `json:"end"`
-}
-
-type Diagnostic struct {
-	Range    Range              `json:"range"`
-	Severity DiagnosticSeverity `json:"severity,omitempty"`
-	Code     interface{}        `json:"code,omitempty"`
-	Source   string             `json:"source,omitempty"`
-	Message  string             `json:"message"`
-	Tags     []DiagnosticTag    `json:"tags,omitempty"`
-}
-
-type PublishDiagnosticsParams struct {
-	URI         DocumentUri  `json:"uri"`
-	Version     int32        `json:"version,omitempty"`
-	Diagnostics []Diagnostic `json:"diagnostics"`
-}
-
-type InitializeResult struct{}' > internal/lsp/protocol/protocol.go
-          printf '%s\n' 'package watcher
-
-import (
-	"context"
-	"github.com/opencode-ai/opencode/internal/lsp"
-)
-
-type WorkspaceWatcher struct {
-	client *lsp.Client
-}
-
-func NewWorkspaceWatcher(client *lsp.Client) *WorkspaceWatcher {
-	return &WorkspaceWatcher{client: client}
-}
-
-func (w *WorkspaceWatcher) WatchWorkspace(ctx context.Context, workspacePath string) {}' > internal/lsp/watcher/watcher.go
-
+          rm -rf internal/tui internal/completions internal/lsp
+          echo "=== 从 stubs 目录复制精简实现 ==="
+          mkdir -p internal/tui/theme internal/lsp/protocol internal/lsp/watcher
+          cp $GITHUB_WORKSPACE/stubs/tui.go internal/tui/tui.go
+          cp $GITHUB_WORKSPACE/stubs/theme.go internal/tui/theme/theme.go
+          cp $GITHUB_WORKSPACE/stubs/lsp.go internal/lsp/lsp.go
+          cp $GITHUB_WORKSPACE/stubs/protocol.go internal/lsp/protocol/protocol.go
+          cp $GITHUB_WORKSPACE/stubs/watcher.go internal/lsp/watcher/watcher.go
           echo "=== 模块列表 ==="
           ls internal/
 
@@ -205,44 +53,11 @@ func (w *WorkspaceWatcher) WatchWorkspace(ctx context.Context, workspacePath str
               git checkout -- .
               rm -rf internal/tui internal/completions internal/lsp
               mkdir -p internal/tui/theme internal/lsp/protocol internal/lsp/watcher
-              printf '%s\n' 'package tui
-              import (tea "github.com/charmbracelet/bubbletea"; "github.com/opencode-ai/opencode/internal/app")
-              type s struct{}
-              func (s) Init() tea.Cmd { return nil }
-              func (s) Update(tea.Msg) (tea.Model, tea.Cmd) { return s{}, nil }
-              func (s) View() string { return "" }
-              func New(_ *app.App) tea.Model { return s{} }' > internal/tui/tui.go
-              printf '%s\n' 'package theme; type Theme struct{}; func (Theme) Get() Theme { return Theme{} }; func Init(_ string) {}; func SetTheme(_ string) error { return nil }' > internal/tui/theme/theme.go
-              printf '%s\n' 'package lsp
-              import ("context"; "encoding/json"; "sync"; "github.com/opencode-ai/opencode/internal/lsp/protocol")
-              type ServerState int; const (StateStarting ServerState = iota; StateReady; StateError)
-              type NotificationHandler func(json.RawMessage)
-              type Client struct{ notificationHandlers map[string]NotificationHandler; notificationMu sync.RWMutex; diagnostics map[protocol.DocumentUri][]protocol.Diagnostic; diagnosticsMu sync.RWMutex; serverState ServerState }
-              func NewClient(ctx context.Context, command string, args ...string) (*Client, error) { return &Client{notificationHandlers:make(map[string]NotificationHandler), diagnostics:make(map[protocol.DocumentUri][]protocol.Diagnostic)}, nil }
-              func (c *Client) InitializeLSPClient(ctx context.Context, workspaceDir string) (*protocol.InitializeResult, error) { return nil, nil }
-              func (c *Client) Close() error { return nil }
-              func (c *Client) Shutdown(ctx context.Context) error { return nil }
-              func (c *Client) WaitForServerReady(ctx context.Context) error { return nil }
-              func (c *Client) GetServerState() ServerState { return c.serverState }
-              func (c *Client) SetServerState(state ServerState) { c.serverState = state }
-              func (c *Client) OpenFile(ctx context.Context, filepath string) error { return nil }
-              func (c *Client) NotifyChange(ctx context.Context, filepath string) error { return nil }
-              func (c *Client) IsFileOpen(filepath string) bool { return false }
-              func (c *Client) GetDiagnostics() map[protocol.DocumentUri][]protocol.Diagnostic { c.diagnosticsMu.RLock(); defer c.diagnosticsMu.RUnlock(); return c.diagnostics }
-              func (c *Client) RegisterNotificationHandler(method string, handler NotificationHandler) { c.notificationMu.Lock(); defer c.notificationMu.Unlock(); c.notificationHandlers[method] = handler }
-              func HandleDiagnostics(client *Client, params json.RawMessage) {}
-              type LSPClients = map[string]*Client' > internal/lsp/lsp.go
-              printf '%s\n' 'package protocol
-              type DocumentUri string; func (uri DocumentUri) Path() string { return string(uri) }
-              type URI = string; type DiagnosticSeverity uint32
-              const (SeverityError DiagnosticSeverity = 1; SeverityWarning DiagnosticSeverity = 2; SeverityInformation DiagnosticSeverity = 3; SeverityHint DiagnosticSeverity = 4)
-              type DiagnosticTag uint32; const (Unnecessary DiagnosticTag = 1; Deprecated DiagnosticTag = 2)
-              type Position struct{ Line uint32 "json:\"line\""; Character uint32 "json:\"character\"" }
-              type Range struct{ Start Position "json:\"start\""; End Position "json:\"end\"" }
-              type Diagnostic struct{ Range Range "json:\"range\""; Severity DiagnosticSeverity "json:\"severity,omitempty\""; Code interface{} "json:\"code,omitempty\""; Source string "json:\"source,omitempty\""; Message string "json:\"message\""; Tags []DiagnosticTag "json:\"tags,omitempty\"" }
-              type PublishDiagnosticsParams struct{ URI DocumentUri "json:\"uri\""; Version int32 "json:\"version,omitempty\""; Diagnostics []Diagnostic "json:\"diagnostics\"" }
-              type InitializeResult struct{}' > internal/lsp/protocol/protocol.go
-              printf '%s\n' 'package watcher; import ("context"; "github.com/opencode-ai/opencode/internal/lsp"); type WorkspaceWatcher struct{ client *lsp.Client }; func NewWorkspaceWatcher(client *lsp.Client) *WorkspaceWatcher { return &WorkspaceWatcher{client: client} }; func (w *WorkspaceWatcher) WatchWorkspace(ctx context.Context, workspacePath string) {}' > internal/lsp/watcher/watcher.go
+              cp $GITHUB_WORKSPACE/stubs/tui.go internal/tui/tui.go
+              cp $GITHUB_WORKSPACE/stubs/theme.go internal/tui/theme/theme.go
+              cp $GITHUB_WORKSPACE/stubs/lsp.go internal/lsp/lsp.go
+              cp $GITHUB_WORKSPACE/stubs/protocol.go internal/lsp/protocol/protocol.go
+              cp $GITHUB_WORKSPACE/stubs/watcher.go internal/lsp/watcher/watcher.go
               CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
                 go build -trimpath -ldflags="-s -w" \
                 -o ../opencode.minimal-arm64 .

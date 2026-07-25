@@ -1,27 +1,63 @@
 package lsp
 
-// 精简版 stub：移除LSP依赖
-// 原版LSP用于代码智能提示，Web Server不需要
-
 import (
 	"context"
+	"encoding/json"
 	"sync"
+
+	"github.com/opencode-ai/opencode/internal/lsp/protocol"
 )
 
-// Client stub
+type ServerState int
+
+const (
+	StateStarting ServerState = iota
+	StateReady
+	StateError
+)
+
+type NotificationHandler func(json.RawMessage)
+
 type Client struct {
-	mu sync.Mutex
+	notificationHandlers map[string]NotificationHandler
+	notificationMu       sync.RWMutex
+	diagnostics          map[protocol.DocumentUri][]protocol.Diagnostic
+	diagnosticsMu        sync.RWMutex
+	serverState          ServerState
 }
 
-// NewClient stub
 func NewClient(ctx context.Context, command string, args ...string) (*Client, error) {
-	return &Client{}, nil
+	return &Client{
+		notificationHandlers: make(map[string]NotificationHandler),
+		diagnostics:          make(map[protocol.DocumentUri][]protocol.Diagnostic),
+	}, nil
 }
 
-// Shutdown stub
-func (c *Client) Shutdown() error {
-	return nil
+func (c *Client) InitializeLSPClient(ctx context.Context, workspaceDir string) (*protocol.InitializeResult, error) {
+	return nil, nil
 }
 
-// LSPClients type
+func (c *Client) Close() error                              { return nil }
+func (c *Client) Shutdown(ctx context.Context) error         { return nil }
+func (c *Client) WaitForServerReady(ctx context.Context) error { return nil }
+func (c *Client) GetServerState() ServerState               { return c.serverState }
+func (c *Client) SetServerState(state ServerState)          { c.serverState = state }
+func (c *Client) OpenFile(ctx context.Context, filepath string) error    { return nil }
+func (c *Client) NotifyChange(ctx context.Context, filepath string) error { return nil }
+func (c *Client) IsFileOpen(filepath string) bool              { return false }
+
+func (c *Client) GetDiagnostics() map[protocol.DocumentUri][]protocol.Diagnostic {
+	c.diagnosticsMu.RLock()
+	defer c.diagnosticsMu.RUnlock()
+	return c.diagnostics
+}
+
+func (c *Client) RegisterNotificationHandler(method string, handler NotificationHandler) {
+	c.notificationMu.Lock()
+	defer c.notificationMu.Unlock()
+	c.notificationHandlers[method] = handler
+}
+
+func HandleDiagnostics(client *Client, params json.RawMessage) {}
+
 type LSPClients = map[string]*Client
