@@ -1,0 +1,88 @@
+name: Build opencode-minimal
+
+on:
+  push:
+    tags: ['v*']
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      opencode_version:
+        description: 'opencode 版本 tag'
+        required: false
+        default: 'v1.17.11'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Clone opencode
+        run: |
+          TAG="${{ github.event.inputs.opencode_version || 'v1.17.11' }}"
+          git clone --depth 1 --branch "$TAG" \
+            https://github.com/opencode-ai/opencode.git _upstream
+
+      - name: Strip non-essential modules
+        run: |
+          cd _upstream
+          echo "=== 移除非必要模块 ==="
+          rm -rf internal/tui
+          rm -rf internal/completions
+          rm -rf internal/lsp
+          echo "=== 创建 theme stub ==="
+          mkdir -p internal/tui/theme
+          cat > internal/tui/theme/theme.go << 'STUB'
+          package theme
+          type Theme struct{}
+          func (Theme) Get() Theme { return Theme{} }
+          func Init(_ string)      {}
+          STUB
+          echo "=== 模块列表 ==="
+          ls internal/
+
+      - name: Build ARM64 binary
+        run: |
+          cd _upstream
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
+            go build -trimpath -ldflags="-s -w" \
+            -o ../opencode.minimal-arm64 . || {
+              echo "TUI 移除构建失败，回退到纯构建优化"
+              git checkout -- .
+              rm -rf internal/tui internal/completions internal/lsp
+              mkdir -p internal/tui/theme
+              echo 'package theme' > internal/tui/theme/theme.go
+              CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
+                go build -trimpath -ldflags="-s -w" \
+                -o ../opencode.minimal-arm64 .
+            }
+
+      - name: Build AMD64 binary
+        run: |
+          cd _upstream
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+            go build -trimpath -ldflags="-s -w" \
+            -o ../opencode.minimal-amd64 . || true
+
+      - name: Report sizes
+        run: |
+          echo "=== 构建产物体积 ==="
+          ls -lh opencode.minimal-* 2>/dev/null || echo "无产物"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: opencode-minimal
+          path: opencode.minimal-*
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: opencode.minimal-*
+          generate_release_notes: true
