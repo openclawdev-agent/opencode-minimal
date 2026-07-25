@@ -32,8 +32,8 @@ jobs:
         run: |
           cd _upstream
           echo "=== 移除非必要模块 ==="
-          rm -rf internal/tui internal/completions internal/lsp
-          echo "=== 从 stubs 目录复制精简实现 ==="
+           rm -rf internal/tui internal/completions internal/lsp internal/diff
+           echo "=== 从 stubs 目录复制精简实现 ==="
           mkdir -p internal/tui/theme internal/lsp/protocol internal/lsp/watcher
           cp $GITHUB_WORKSPACE/stubs/tui.go internal/tui/tui.go
           cp $GITHUB_WORKSPACE/stubs/theme.go internal/tui/theme/theme.go
@@ -51,7 +51,7 @@ jobs:
             -o ../opencode.minimal-arm64 . || {
               echo "TUI 移除构建失败，回退到纯构建优化"
               git checkout -- .
-              rm -rf internal/tui internal/completions internal/lsp
+              rm -rf internal/tui internal/completions internal/lsp internal/diff
               mkdir -p internal/tui/theme internal/lsp/protocol internal/lsp/watcher
               cp $GITHUB_WORKSPACE/stubs/tui.go internal/tui/tui.go
               cp $GITHUB_WORKSPACE/stubs/theme.go internal/tui/theme/theme.go
