@@ -54,16 +54,18 @@ jobs:
           cat package.json | python3 -c "
           import json, sys
           pkg = json.load(sys.stdin)
-          remove = {'@opencode-ai/script', '@opencode-ai/slack', '@opencode-ai/sdk-next'}
+          # workspace 路径（不是包名）
+          remove_ws = {'packages/slack', 'packages/sdk-next'}
           # 移除 workspaces 中的引用
           ws = pkg.get('workspaces', {})
           if isinstance(ws, dict) and 'packages' in ws:
-              ws['packages'] = [w for w in ws['packages'] if w not in remove]
+              ws['packages'] = [w for w in ws['packages'] if w not in remove_ws]
           elif isinstance(ws, list):
-              pkg['workspaces'] = [w for w in ws if w not in remove]
+              pkg['workspaces'] = [w for w in ws if w not in remove_ws]
           # 移除 dependencies 中的 workspace 引用
+          remove_deps = {'@opencode-ai/script', '@opencode-ai/slack', '@opencode-ai/sdk-next'}
           deps = pkg.get('dependencies', {})
-          to_del = [k for k in deps if k in remove]
+          to_del = [k for k in deps if k in remove_deps]
           for k in to_del:
               del deps[k]
           json.dump(pkg, sys.stdout, indent=2)
