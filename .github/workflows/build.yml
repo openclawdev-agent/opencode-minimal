@@ -51,7 +51,7 @@ jobs:
         run: |
           cd _upstream/packages/opencode
           bun build --compile --target=bun-linux-arm64-musl \
-            --outfile=../../opencode-mini-arm64 \
+            --outfile=$GITHUB_WORKSPACE/opencode-mini-arm64 \
             ./src/index.ts
         env:
           OPENCODE_VERSION: ${{ steps.version.outputs.version }}
