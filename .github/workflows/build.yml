@@ -111,4 +111,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: opencode-mini-arm64
+          tag_name: 'v1.18.5'
+          name: 'opencode-mini v1.18.5'
           generate_release_notes: true
