@@ -48,13 +48,10 @@ jobs:
         env:
           GH_REPO: openclawdev-agent/opencode-minimal
 
-      - name: Find and copy binary
+      - name: Copy binary
         run: |
-          cd _upstream/packages/opencode
-          find dist -type f -name "opencode" | head -5
-          # 复制到根目录
-          cp dist/*/bin/opencode ../../opencode-arm64 || true
-          ls -lh ../../opencode-arm64 2>/dev/null || echo "binary not found"
+          ls -lh opencode-arm64
+          file opencode-arm64
 
       - name: Report sizes
         run: |
