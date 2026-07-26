@@ -1,4 +1,4 @@
-name: Build opencode-minimal
+name: Build opencode
 
 permissions:
   contents: write
@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
     inputs:
       opencode_version:
-        description: 'opencode 版本 tag'
+        description: 'opencode version tag (e.g. v1.18.5)'
         required: false
-        default: 'v0.0.55'
+        default: 'v1.18.5'
 
 jobs:
   build:
@@ -20,76 +20,52 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          go-version: '1.24'
+          bun-version: latest
 
       - name: Clone opencode
         run: |
-          TAG="${{ github.event.inputs.opencode_version || 'v0.0.55' }}"
+          TAG="${{ github.event.inputs.opencode_version || 'v1.18.5' }}"
           git clone --depth 1 --branch "$TAG" \
-            https://github.com/opencode-ai/opencode.git _upstream
+            https://github.com/anomalyco/opencode.git _upstream
 
-      - name: Strip non-essential modules
+      - name: Install dependencies
         run: |
           cd _upstream
-           echo "=== 移除非必要模块 ==="
-            rm -rf internal/tui internal/completions internal/lsp
-            echo "=== 从 stubs 目录复制精简实现 ==="
-          mkdir -p internal/tui/theme internal/lsp/protocol internal/lsp/watcher
-          cp $GITHUB_WORKSPACE/stubs/tui.go internal/tui/tui.go
-          cp $GITHUB_WORKSPACE/stubs/theme.go internal/tui/theme/theme.go
-          cp $GITHUB_WORKSPACE/stubs/lsp.go internal/lsp/lsp.go
-          cp $GITHUB_WORKSPACE/stubs/protocol.go internal/lsp/protocol/protocol.go
-           cp $GITHUB_WORKSPACE/stubs/watcher.go internal/lsp/watcher/watcher.go
-           cp $GITHUB_WORKSPACE/stubs/diff.go internal/diff/diff.go
-           echo "=== 模块列表 ==="
-          ls internal/
+          bun install
 
       - name: Build ARM64 binary
         run: |
-          cd _upstream
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
-            go build -trimpath -ldflags="-s -w" \
-            -o ../opencode.minimal-arm64 . || {
-              echo "TUI 移除构建失败，回退到纯构建优化"
-               git checkout -- .
-               rm -rf internal/tui internal/completions internal/lsp
-              mkdir -p internal/tui/theme internal/lsp/protocol internal/lsp/watcher
-              cp $GITHUB_WORKSPACE/stubs/tui.go internal/tui/tui.go
-              cp $GITHUB_WORKSPACE/stubs/theme.go internal/tui/theme/theme.go
-              cp $GITHUB_WORKSPACE/stubs/lsp.go internal/lsp/lsp.go
-              cp $GITHUB_WORKSPACE/stubs/protocol.go internal/lsp/protocol/protocol.go
-              cp $GITHUB_WORKSPACE/stubs/watcher.go internal/lsp/watcher/watcher.go
-              cp $GITHUB_WORKSPACE/stubs/diff.go internal/diff/diff.go
-              CGO_ENABLED=0 GOOS=linux GOARCH=arm64 \
-                go build -trimpath -ldflags="-s -w" \
-                -o ../opencode.minimal-arm64 .
-            }
+          cd _upstream/packages/opencode
+          bun run script/build.ts --single --skip-embed-web-ui
+        env:
+          GH_REPO: openclawdev-agent/opencode-minimal
 
-      - name: Build AMD64 binary
+      - name: Find and copy binary
         run: |
-          cd _upstream
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-            go build -trimpath -ldflags="-s -w" \
-            -o ../opencode.minimal-amd64 . || true
+          cd _upstream/packages/opencode
+          find dist -type f -name "opencode" | head -5
+          # 复制到根目录
+          cp dist/*/bin/opencode ../../opencode-arm64 || true
+          ls -lh ../../opencode-arm64 2>/dev/null || echo "binary not found"
 
       - name: Report sizes
         run: |
           echo "=== 构建产物体积 ==="
-          ls -lh opencode.minimal-* 2>/dev/null || echo "无产物"
+          ls -lh opencode-arm64 2>/dev/null || echo "无产物"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: opencode-minimal
-          path: opencode.minimal-*
+          name: opencode-arm64
+          path: opencode-arm64
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: opencode.minimal-*
+          files: opencode-arm64
           generate_release_notes: true
