@@ -69,6 +69,29 @@ jobs:
           " > package.json.tmp && mv package.json.tmp package.json
           echo "=== Patched workspaces ==="
 
+      - name: Remove deleted workspace references
+        run: |
+          cd _upstream
+          # 要移除的包
+          REMOVE='@opencode-ai/script @opencode-ai/httpapi-codegen @opencode-ai/http-recorder @opencode-ai/codemode @opencode-ai/tui @opencode-ai/slack @opencode-ai/sdk-next @opencode-ai/cli @opencode-ai/storybook @opencode-ai/enterprise @opencode-ai/function @opencode-ai/containers'
+          for pkg in $(find packages -name package.json); do
+            python3 -c "
+          import json, sys
+          remove = set('''$REMOVE'''.split())
+          pkg = json.load(open('$pkg'))
+          changed = False
+          for section in ['dependencies', 'devDependencies', 'peerDependencies']:
+              deps = pkg.get(section, {})
+              to_del = [k for k in deps if k in remove]
+              for k in to_del:
+                  del deps[k]
+                  changed = True
+          if changed:
+              json.dump(pkg, open('$pkg', 'w'), indent=2)
+              print(f'Patched: $pkg')
+          "
+          done
+
       - name: Patch opencode dependencies
         run: |
           cd _upstream/packages/opencode
