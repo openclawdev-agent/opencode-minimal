@@ -41,6 +41,24 @@ jobs:
           echo "=== 保留的包（含 Web UI）==="
           ls -d */
 
+      - name: Patch root workspaces
+        run: |
+          cd _upstream
+          cat package.json | python3 -c "
+          import json, sys
+          pkg = json.load(sys.stdin)
+          # 移除不存在的 workspace
+          remove_workspaces = [
+              'packages/tui', 'packages/desktop', 'packages/web', 'packages/storybook',
+              'packages/enterprise', 'packages/function', 'packages/slack', 'packages/sdk-next',
+              'packages/httpapi-codegen', 'packages/codemode', 'packages/cli',
+              'packages/http-recorder', 'packages/script', 'packages/containers'
+          ]
+          pkg['workspaces'] = [w for w in pkg.get('workspaces', []) if w not in remove_workspaces]
+          json.dump(pkg, sys.stdout, indent=2)
+          " > package.json.tmp && mv package.json.tmp package.json
+          echo "=== Patched workspaces ==="
+
       - name: Patch opencode dependencies
         run: |
           cd _upstream/packages/opencode
