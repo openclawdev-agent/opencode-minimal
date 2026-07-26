@@ -35,23 +35,23 @@ jobs:
         run: |
           cd _upstream/packages
           echo "=== 移除不需要的包 ==="
-          rm -rf tui ui app session-ui desktop web storybook enterprise function slack sdk-next
-          rm -rf httpapi-codegen codemode cli http-recorder script storybook containers
-          echo "=== 保留的包 ==="
+          # 只移除 TUI/Desktop/企业版等，保留 Web UI
+          rm -rf tui desktop web storybook enterprise function slack sdk-next
+          rm -rf httpapi-codegen codemode cli http-recorder script containers
+          echo "=== 保留的包（含 Web UI）==="
           ls -d */
 
       - name: Patch opencode dependencies
         run: |
           cd _upstream/packages/opencode
-          # 移除 TUI 相关依赖（serve 不需要）
+          # 仅移除 TUI 特有依赖（保留 solid-js 给 Web UI）
           cat package.json | python3 -c "
           import json, sys
           pkg = json.load(sys.stdin)
-          # 移除 TUI 相关依赖
+          # 只移除 TUI 特有依赖
           remove_deps = [
               '@opencode-ai/tui', '@opentui/core', '@opentui/keymap', '@opentui/solid',
-              'solid-js', '@solid-primitives/event-bus', '@solid-primitives/scheduled',
-              '@clack/prompts', 'opentui-spinner', '@kobalte/core',
+              '@clack/prompts', 'opentui-spinner',
               'tree-sitter-bash', 'tree-sitter-powershell', 'web-tree-sitter',
               '@silvia-odwyer/photon-node', '@zip.js/zip.js'
           ]
@@ -60,7 +60,7 @@ jobs:
               pkg.get('devDependencies', {}).pop(dep, None)
           json.dump(pkg, sys.stdout, indent=2)
           " > package.json.tmp && mv package.json.tmp package.json
-          echo "=== Patched dependencies ==="
+          echo "=== Patched dependencies (TUI only removed) ==="
 
       - name: Install dependencies
         run: |
