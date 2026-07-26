@@ -31,6 +31,13 @@ jobs:
           git clone --depth 1 --branch "$TAG" \
             https://github.com/anomalyco/opencode.git _upstream
 
+      - name: Get version from source
+        id: version
+        run: |
+          VERSION=$(cd _upstream/packages/opencode && python3 -c "import json; print(json.load(open('package.json'))['version'])")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Detected version: $VERSION"
+
       - name: Strip non-essential packages
         run: |
           cd _upstream/packages
@@ -111,6 +118,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           files: opencode-mini-arm64
-          tag_name: 'v1.18.5'
-          name: 'opencode-mini v1.18.5'
+          tag_name: 'v${{ steps.version.outputs.version }}'
+          name: 'opencode-mini v${{ steps.version.outputs.version }}'
           generate_release_notes: true
