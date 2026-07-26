@@ -34,7 +34,10 @@ jobs:
       - name: Install dependencies
         run: |
           cd _upstream
+          # 安装默认平台依赖
           bun install
+          # 额外安装 ARM64 musl 平台依赖（@opentui/core 等原生模块）
+          bun install --os="linux" --cpu="arm64" --force 2>/dev/null || true
 
       - name: Get version from source
         id: version
