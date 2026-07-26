@@ -42,10 +42,10 @@ jobs:
         run: |
           cd _upstream/packages
           echo "=== 移除不需要的包 ==="
-          # 只移除 TUI/Desktop/企业版等，保留 Web UI
-          rm -rf tui desktop web storybook enterprise function slack sdk-next
+          # 保留 tui（其他包 import 了它，bun compile 只打包使用的代码）
+          rm -rf desktop web storybook enterprise function slack sdk-next
           rm -rf httpapi-codegen codemode cli http-recorder script containers
-          echo "=== 保留的包（含 Web UI）==="
+          echo "=== 保留的包 ==="
           ls -d */
 
       - name: Patch root package.json
