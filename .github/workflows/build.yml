@@ -1,4 +1,4 @@
-name: Build opencode
+name: Build opencode-mini
 
 permissions:
   contents: write
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       opencode_version:
-        description: 'opencode version tag (e.g. v1.18.5)'
+        description: 'opencode version tag'
         required: false
         default: 'v1.18.5'
 
@@ -31,43 +31,66 @@ jobs:
           git clone --depth 1 --branch "$TAG" \
             https://github.com/anomalyco/opencode.git _upstream
 
+      - name: Strip non-essential packages
+        run: |
+          cd _upstream/packages
+          echo "=== 移除不需要的包 ==="
+          rm -rf tui ui app session-ui desktop web storybook enterprise function slack sdk-next
+          rm -rf httpapi-codegen codemode cli http-recorder script storybook containers
+          echo "=== 保留的包 ==="
+          ls -d */
+
+      - name: Patch opencode dependencies
+        run: |
+          cd _upstream/packages/opencode
+          # 移除 TUI 相关依赖（serve 不需要）
+          cat package.json | python3 -c "
+          import json, sys
+          pkg = json.load(sys.stdin)
+          # 移除 TUI 相关依赖
+          remove_deps = [
+              '@opencode-ai/tui', '@opentui/core', '@opentui/keymap', '@opentui/solid',
+              'solid-js', '@solid-primitives/event-bus', '@solid-primitives/scheduled',
+              '@clack/prompts', 'opentui-spinner', '@kobalte/core',
+              'tree-sitter-bash', 'tree-sitter-powershell', 'web-tree-sitter',
+              '@silvia-odwyer/photon-node', '@zip.js/zip.js'
+          ]
+          for dep in remove_deps:
+              pkg.get('dependencies', {}).pop(dep, None)
+              pkg.get('devDependencies', {}).pop(dep, None)
+          json.dump(pkg, sys.stdout, indent=2)
+          " > package.json.tmp && mv package.json.tmp package.json
+          echo "=== Patched dependencies ==="
+
       - name: Install dependencies
         run: |
           cd _upstream
-          bun install
+          bun install --no-save
 
       - name: Build ARM64 binary
         run: |
           cd _upstream/packages/opencode
-          # 安装所有平台的依赖
-          bun install --os="*" --cpu="*"
-          # 使用 Bun 交叉编译 ARM64 musl
           bun build --compile --target=bun-linux-arm64-musl \
-            --outfile=../../opencode-arm64 \
+            --outfile=../../opencode-mini-arm64 \
             ./src/index.ts
         env:
-          GH_REPO: openclawdev-agent/opencode-minimal
+          OPENCODE_VERSION: ${{ github.event.inputs.opencode_version || 'v1.18.5' }}
 
-      - name: Copy binary
+      - name: Verify binary
         run: |
-          ls -lh opencode-arm64
-          file opencode-arm64
-
-      - name: Report sizes
-        run: |
-          echo "=== 构建产物体积 ==="
-          ls -lh opencode-arm64 2>/dev/null || echo "无产物"
+          ls -lh opencode-mini-arm64
+          file opencode-mini-arm64
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: opencode-arm64
-          path: opencode-arm64
+          name: opencode-mini
+          path: opencode-mini-arm64
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: opencode-arm64
+          files: opencode-mini-arm64
           generate_release_notes: true
