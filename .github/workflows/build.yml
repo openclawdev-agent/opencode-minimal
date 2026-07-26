@@ -39,7 +39,12 @@ jobs:
       - name: Build ARM64 binary
         run: |
           cd _upstream/packages/opencode
-          bun run script/build.ts --single --skip-embed-web-ui
+          # 安装所有平台的依赖
+          bun install --os="*" --cpu="*"
+          # 使用 Bun 交叉编译 ARM64 musl
+          bun build --compile --target=bun-linux-arm64-musl \
+            --outfile=../../opencode-arm64 \
+            ./src/index.ts
         env:
           GH_REPO: openclawdev-agent/opencode-minimal
 
